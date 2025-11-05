@@ -1,8 +1,25 @@
-// 查询有票车次
-// 入口
+/**
+ * ========================================
+ * 余票查询模块（版本 1）
+ * ========================================
+ *
+ * 功能：
+ * 1. 查询余票信息
+ * 2. 发现余票立即抢票
+ * 3. 可配置查询间隔
+ *
+ * 注意：此为备用版本，推荐使用 queryList2.js
+ * ========================================
+ */
+
 const placeOrder = require('./placeOrder');
 const {queryCookie} = require('./config');
 
+/**
+ * 查询任务函数
+ * @param {Object} QLP - 查询列表参数
+ * @param {Number} intervalTime - 查询间隔时间
+ */
 module.exports = function ({QLP: queryListPrams, intervalTime}) {
     let flag = false;
 

@@ -1,4 +1,21 @@
-// 校验是否登录状态
+/**
+ * ========================================
+ * 登录状态监控模块
+ * ========================================
+ *
+ * 功能：
+ * 1. 定时检测用户登录状态
+ * 2. Cookie 失效时自动发送邮件通知
+ * 3. 时间段控制（6:00-23:00）
+ * 4. 每分钟检测一次
+ *
+ * 使用：
+ * node scripts/loopCheckUser.js
+ * 或
+ * npm run loopCheckUser
+ * ========================================
+ */
+
 const superagent = require('superagent');
 const setHeaders = require('./setHeaders');
 const getCodeImage = require('./getCodeImage');

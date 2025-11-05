@@ -1,3 +1,22 @@
+/**
+ * ========================================
+ * 订单提交模块 - 自动抢票核心流程
+ * ========================================
+ * 
+ * 功能：
+ * 1. 校验登录状态
+ * 2. 提交订单请求
+ * 3. 确认座位信息
+ * 4. 轮询订单结果
+ * 5. 发送邮件通知
+ * 
+ * 流程：
+ * checkUser → submitOrderRequest → initDc → 
+ * checkOrderInfo → getQueueCount → confirmSingleForQueue → 
+ * queryOrderWaitTime → resultOrderForDcQueue
+ * ========================================
+ */
+
 const superagent = require('superagent');
 const moment = require('moment');
 const setHeaders = require('./setHeaders');
@@ -5,7 +24,11 @@ const config = require('./config');
 const getCodeImage = require('./getCodeImage');
 const utils = require('./utils');
 
-// 下单占位
+/**
+ * 下单占位主函数
+ * @param {Object} options - 订单参数
+ * @param {Object} configItem - 配置项
+ */
 module.exports = async (options, configItem) => {
     const queryDate = options.queryDate;
     const queryParams = {

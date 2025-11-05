@@ -1,2 +1,48 @@
+# 依赖目录
 /node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境变量配置
+.env
+.env.local
+.env.*.local
+
+# 本地配置
 scripts/localConfig.js
+
+# PM2 配置
+.pm2/
+pids/
+logs/
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE 配置
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 测试覆盖率
+coverage/
+.nyc_output/
+
+# 构建输出
+dist/
+build/
+
+# 敏感数据
+*.pem
+*.key
+*.cert
+
+# 临时/备用代码（可能包含敏感信息）
+/temp2/

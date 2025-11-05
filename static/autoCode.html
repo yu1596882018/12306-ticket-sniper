@@ -1,14 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <title>校验验证码</title>
+    <title>12306 验证码识别 - 抢票系统</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .tips {
+            background: #e3f2fd;
+            border-left: 4px solid #1890ff;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .tips strong {
+            color: #1890ff;
         }
 
         #J-loginImg {
@@ -24,6 +74,15 @@
             position: relative;
             width: 300px;
             height: 188px;
+            margin: 0 auto 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        #J-passCodeCoin:hover {
+            border-color: #1890ff;
         }
 
         .lgcode-active {
@@ -35,15 +94,85 @@
             background: url(https://kyfw.12306.cn/otn/resources/images/login/captcha.png);
             background-repeat: no-repeat;
             background-position: 0 -96px;
+            cursor: pointer;
+            animation: fadeIn 0.2s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        #submit {
+            background: #1890ff;
+            color: white;
+        }
+        
+        #submit:hover {
+            background: #40a9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+        }
+        
+        #refresh {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        #refresh:hover {
+            background: #e0e0e0;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #999;
         }
     </style>
 </head>
 <body>
-<div id="J-passCodeCoin">
-    <img id="J-loginImg">
+<div class="container">
+    <div class="header">
+        <h1>🚄 验证码识别</h1>
+        <p>12306 抢票系统</p>
+    </div>
+    
+    <div class="tips">
+        <strong>操作提示：</strong>点击图片中的文字位置进行选择，最多可选8个点。点击已选点可取消。
+    </div>
+    
+    <div id="J-passCodeCoin">
+        <img id="J-loginImg" alt="验证码">
+    </div>
+    
+    <div class="button-group">
+        <button type="button" id="submit">✓ 提交验证</button>
+        <button type="button" id="refresh">↻ 刷新</button>
+    </div>
+    
+    <div class="footer">
+        Powered by 12306 Ticket Sniper
+    </div>
 </div>
-<input type="button" id="submit" value="提交">
-<input type="button" id="refresh" value="刷新">
 
 <script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script>
 <script>
@@ -72,13 +201,22 @@
             arr.push(doms[i].getAttribute('randcode'));
         }
 
+        if (arr.length === 0) {
+            alert('⚠️ 请先点击图片选择验证码位置');
+            return;
+        }
+        
         axios({
             method: 'get',
             url: '/submitCode?answer=' + arr.join(',')
         }).then(res => {
-            alert(res.data.result_message);
+            if (res.data.result_code === 0) {
+                alert('✅ 验证成功！\n\n' + res.data.result_message + '\n\n系统将自动更新 Cookie 并重启查询任务。');
+            } else {
+                alert('❌ 验证失败\n\n' + res.data.result_message + '\n\n请点击刷新按钮重试。');
+            }
         }, res => {
-            alert('验证失败，请点击刷新按钮重试！');
+            alert('❌ 验证失败，请点击刷新按钮重试！');
         });
     };
 

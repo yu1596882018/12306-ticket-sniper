@@ -1,17 +1,59 @@
 {
-  "name": "12306script",
-  "version": "1.0.0",
-  "description": "",
-  "main": "temp/common.js",
+  "name": "12306-ticket-sniper",
+  "version": "2.0.0",
+  "description": "🚄 一个高效、智能的 12306 火车票自动抢票系统。基于 Node.js + Redis + Nodemailer 构建的分布式抢票解决方案，支持多人、多线路、多日期并发抢票，邮件实时通知，帮助您在春运等购票高峰期快速抢到心仪的车票。",
+  "main": "app.js",
   "scripts": {
     "start": "node ./app.js",
-    "loopCheckUser": "pm2 start ./scripts/loopCheckUser.js",
-    "pm2": "pm2 start ./app.js -i 2"
+    "loopCheckUser": "pm2 start ./scripts/loopCheckUser.js --name 12306-check-user",
+    "pm2": "pm2 start ./app.js -i 2 --name 12306-ticket-service",
+    "stop": "pm2 stop all",
+    "restart": "pm2 restart all",
+    "logs": "pm2 logs",
+    "monitor": "pm2 monit"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "12306",
+    "ticket",
+    "train",
+    "railway",
+    "crawler",
+    "spider",
+    "automation",
+    "抢票",
+    "火车票",
+    "自动化",
+    "爬虫",
+    "春运",
+    "node.js",
+    "redis",
+    "nodemailer",
+    "koa",
+    "superagent",
+    "distributed",
+    "高并发"
+  ],
+  "author": {
+    "name": "烟竹",
+    "email": "1596882018@qq.com",
+    "url": "https://github.com/yu1596882018"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yu1596882018/12306Script.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yu1596882018/12306Script/issues"
+  },
+  "homepage": "https://github.com/yu1596882018/12306Script#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.0.0",
+    "npm": ">=6.0.0"
+  },
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
+    "dotenv": "^8.2.0",
     "http-proxy-middleware": "^0.20.0",
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
@@ -27,5 +69,6 @@
     "superagent-jsonp": "^0.2.1",
     "superagent-proxy": "^2.0.0",
     "uuid": "^3.3.3"
-  }
+  },
+  "devDependencies": {}
 }

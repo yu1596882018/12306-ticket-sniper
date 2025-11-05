@@ -1,4 +1,23 @@
-// 查询有票车次
+/**
+ * ========================================
+ * 余票查询模块（版本 2）
+ * ========================================
+ * 
+ * 功能：
+ * 1. 定时轮询查询余票信息
+ * 2. 支持多日期、多线路并发查询
+ * 3. 智能筛选车次（时间段、指定车次、座位类型）
+ * 4. 发现余票立即触发抢票
+ * 5. 支持代理请求
+ * 6. 时间段控制（6:00-23:00）
+ * 
+ * 特点：
+ * - Promise 并发处理
+ * - 可配置查询间隔
+ * - 支持任务停止控制
+ * ========================================
+ */
+
 const superagent = require('superagent');
 require('superagent-proxy')(superagent);
 const setHeaders = require('./setHeaders');
@@ -6,6 +25,12 @@ const placeOrder = require('./placeOrder');
 const {queryCookie} = require('./config');
 const {openProxy, proxyUrl} = require('./localConfig');
 
+/**
+ * 查询任务主函数
+ * @param {Array} queryListParams - 查询任务列表配置
+ * @param {Number} intervalTime - 查询间隔时间（毫秒）
+ * @returns {Object} 返回控制对象，包含 stop 方法
+ */
 module.exports = function ({queryListParams: QLP, intervalTime}) {
     let isStopFlog = false;
     QLP.forEach(item => {
