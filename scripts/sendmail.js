@@ -1,38 +1,41 @@
+// 邮件通知模块
+// 用于发送验证码校验、登录状态等提醒邮件
+
 const nodemailer = require("nodemailer");
 const localConfig = require('./localConfig');
 
+/**
+ * 发送邮件提醒
+ * @param {string} key - 验证码 key
+ * @param {object} opt - 可选参数（如 flag 标记）
+ */
 module.exports = (key, opt = {}) => {
-// async..await is not allowed in global scope, must use a wrapper
+    // async..await 不能直接用于顶层，需包裹一层
     async function main () {
-        // Generate test SMTP service account from ethereal.email
-        // Only needed if you don't have a real mail account for testing
-        let testAccount = await nodemailer.createTestAccount();
+        // 生成测试 SMTP 账号（如无真实邮箱可用于测试）
+        // let testAccount = await nodemailer.createTestAccount();
 
-        // create reusable transporter object using the default SMTP transport
+        // 创建邮件发送对象
         let transporter = nodemailer.createTransport({
-            host: "smtp.qq.com",
-            port: 465,
-            secure: true, // true for 465, false for other ports
+            host: localConfig.emailHost || "smtp.qq.com",
+            port: localConfig.emailPort || 465,
+            secure: true, // 465 端口为 SSL
             auth: {
-                user: localConfig.emailUser, // generated ethereal user
-                pass: localConfig.emailPass// generated ethereal password
+                user: localConfig.emailUser, // 邮箱账号
+                pass: localConfig.emailPass  // 邮箱授权码
             }
         });
 
-        // send mail with defined transport object
+        // 发送邮件
         let info = await transporter.sendMail({
-            from: '"烟竹" <1596882018@qq.com>', // sender address
-            to: "1596882018@qq.com", // list of receivers
-            subject: "校验验证码", // Subject line
-            html: `<a href="${localConfig.host}/autoCode.html?key=${key}">${opt.flag ? opt.flag : '登录状态失效，'}前往验证</a>` // html body
+            from: `"12306Script" <${localConfig.emailUser}>`, // 发件人
+            to: localConfig.emailUser, // 收件人，可扩展为多用户
+            subject: "校验验证码", // 邮件主题
+            html: `<a href="${localConfig.host}/autoCode.html?key=${key}">${opt.flag ? opt.flag : '登录状态失效，'}前往验证</a>` // 邮件内容
         });
 
-        console.log("Message sent: %s", info.messageId);
-        // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
-        // Preview only available when sending through an Ethereal account
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-        // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+        console.log("邮件已发送: %s", info.messageId);
+        // console.log("预览地址: %s", nodemailer.getTestMessageUrl(info));
     }
 
     main().catch(console.error);

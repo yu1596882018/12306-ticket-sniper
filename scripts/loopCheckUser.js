@@ -1,60 +1,23 @@
-// 校验是否登录状态
+// 登录状态定时校验模块
+// 定时检测 12306 登录状态，失效时自动触发验证码邮件提醒
+
 const superagent = require('superagent');
 const setHeaders = require('./setHeaders');
 const getCodeImage = require('./getCodeImage');
 const config = require('./config');
-const {queryCookie} = require('./config');
+const { queryCookie } = require('./config');
 const moment = require('moment');
-/*
-const start = async () => {
-    let checkUserResult = await setHeaders(superagent.post('https://kyfw.12306.cn/otn/login/checkUser'))
-        .send({
-            _json_att: ''
-        });
-    console.log('checkUserResult', checkUserResult.text);
-    let checkUserData = JSON.parse(checkUserResult.text);
-    if (!checkUserData.data.flag) {
-        console.log('cookie失效');
-        getCodeImage({
-            sendmail: true
-        });
-    }
-}*/
 
-/*const start = async () => {
-    await new Promise((resolve, reject) => {
-        config.redisDb.get('userCookie', function (err, v) {
-            if (err) {
-                reject(err);
-            } else {
-                v && (config.userCookie = v);
-                resolve(v);
-            }
-        });
-    });
-
-    let chechFaceResult = await setHeaders(superagent.post('https://kyfw.12306.cn/otn/afterNate/chechFace'))
-        .send({
-            secretList: `q0ayjkIIX64yKjLwF6K7dCIDp25C4iVs5L3m2ybXBNNyxW%2FFjsLU29yawLt2XGdqYZQv%2F9G7R1fA%0AbPUUb1BOHw7PZgJ87sUI3PLmKIRLhXkAoaWejL4IF45A%2Be7TrF4pQOZaUB4Bu5Xvm4Bnr6%2BZz95M%0A7%2FHKPaViGh0Jm1J5Nkzq0mwRgKAAMwfweEmLuHlanN2JsGMahUqEkFJcXB5MNhYwuTV95WNdNXjx%0ASIS2do31TfB2CKDBVAzgNF6%2FzIwyuYIY06LzNKPvnRgEt%2BFTdMhYfsleQDOZI2Hw64YWwhyhoV2p%0A#9|`,
-            _json_att: ''
-        });
-    // console.log('checkUserResult', checkUserResult.text);
-    // let checkUserData = JSON.parse(checkUserResult.text);
-    let checkUserData = chechFaceResult.body;
-    console.log(chechFaceResult.body)
-    if (checkUserData.status && !checkUserData.data.login_flag) {
-        console.log('cookie失效');
-        getCodeImage({
-            sendmail: true
-        });
-    }
-}*/
-
+/**
+ * 定时校验登录状态主流程
+ */
 const start = async () => {
     try {
+        // 非抢票时间段不校验
         if (new Date().getHours() < 6 || new Date().getHours() >= 23) {
-            return console.log('不再抢票时间！');
+            return console.log('不在抢票时间！');
         }
+        // 获取最新 Cookie
         await new Promise((resolve, reject) => {
             config.redisDb.get('userCookie', function (err, v) {
                 if (err) {
@@ -65,7 +28,7 @@ const start = async () => {
                 }
             });
         });
-
+        // 构造查询参数
         const queryParams = {
             secretStr: '',
             queryDate: moment().set('date', moment().get('date') + 7).format("YYYY-MM-DD"),
@@ -74,8 +37,7 @@ const start = async () => {
             toCiteCode: 'LHA',
             toCiteText: '隆回'
         }
-
-        // 查询
+        // 查询余票
         let queryZResult = await setHeaders(superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryO'), queryCookie)
             .query({
                 'leftTicketDTO.train_date': queryParams.queryDate,
@@ -87,26 +49,20 @@ const start = async () => {
             let arr = item.split('|');
             return arr[11] === 'Y' && ((arr[30] && arr[30] !== '无') || (arr[31] && arr[31] !== '无'));
         });
-
         if (!queryItem) {
             throw new Error('无票');
             return false;
         }
-
         queryParams.secretStr = queryItem.split('|')[0]
-
         // 校验登录
         let checkUserResult = await setHeaders(superagent.post('https://kyfw.12306.cn/otn/login/checkUser'))
-            .send({
-                _json_att: ''
-            });
+            .send({ _json_att: '' });
         console.log('checkUserResult', checkUserResult.text);
         let checkUserData = JSON.parse(checkUserResult.text);
         if (!checkUserData.data.flag) {
             throw new Error('cookie失效');
             return false;
         }
-
         // 预订
         let submitOrderRequestResult = await setHeaders(superagent.post('https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest'))
             .send({
@@ -123,11 +79,9 @@ const start = async () => {
         let checkUserrData = JSON.parse(submitOrderRequestResult.text);
     } catch (e) {
         console.log('异常', e);
-        getCodeImage({
-            sendmail: true
-        });
+        getCodeImage({ sendmail: true });
     }
 }
-
+// 启动定时任务
 setTimeout(start, 3000);
 setInterval(start, 1 * 60 * 1000);
