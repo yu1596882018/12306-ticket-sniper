@@ -1,18 +1,14 @@
-(async function () {
-    const toCiteCodes = [
-        {
-            code: 'LHA'
-        },
-        {
-            code: 'SYQ',
-            checi: ['G6142', 'G6174']
-        },
-        {
-            code: 'KAQ',
-            checi: ['G6142', 'G6174']
-        }
-    ];
+// 批量余票查询示例脚本
+// 支持多日期、多目的地循环查询，命中后终止
 
+(async function () {
+    // 目标站点及车次
+    const toCiteCodes = [
+        { code: 'LHA' },
+        { code: 'SYQ', checi: ['G6142', 'G6174'] },
+        { code: 'KAQ', checi: ['G6142', 'G6174'] }
+    ];
+    // 查询日期
     const queryDates = [
         '2020-01-18',
         '2020-01-19',
@@ -21,14 +17,11 @@
         '2020-01-22',
         '2020-01-23'
     ];
-
     let flag = false;
-
     const superagent = require('superagent');
     const setHeaders = require('./setHeaders');
-
     startFunc();
-
+    // 主循环查询函数
     function startFunc () {
         var pros = [];
         queryDates.forEach(queryDate => {
@@ -41,8 +34,7 @@
                                 toCiteCode: code.code,
                                 queryDate: queryDate
                             };
-
-                            // 查询
+                            // 查询余票
                             let queryZResult = await setHeaders(superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryZ'))
                                 .query({
                                     'leftTicketDTO.train_date': queryParams.queryDate,
@@ -50,7 +42,6 @@
                                     'leftTicketDTO.to_station': queryParams.toCiteCode,
                                     purpose_codes: 'ADULT'
                                 });
-                            // console.log('queryZResult', queryZResult.text);
                             let queryZData = JSON.parse(queryZResult.text);
                             let queryItem = queryZData.data.result.find(item => {
                                 let arr = item.split('|');
@@ -73,11 +64,10 @@
                         reject();
                         throw e;
                     }
-
                 }));
             });
         });
-
+        // 所有查询完成后，决定是否继续下一轮
         Promise.all(pros).then(res => {
             setTimeout(() => {
                 startFunc();

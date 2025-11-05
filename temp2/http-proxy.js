@@ -1,22 +1,18 @@
+// HTTP 代理服务器示例
+// 用于将本地请求代理到 12306 官网，便于抓包和调试
+
 var http = require('http'),
     httpProxy = require('http-proxy');
 
-//
-// Create a proxy server with custom application logic
-//
+// 创建代理服务器
 var proxy = httpProxy.createProxyServer({});
 
-//
-// Create your custom server and just call `proxy.web()` to proxy
-// a web request to the target passed in the options
-// also you can use `proxy.ws()` to proxy a websockets request
-//
+// 创建本地 HTTP 服务并代理所有请求到 12306
 var server = http.createServer(function (req, res) {
-    // You can define here your custom logic to handle the request
-    // and then proxy the request.
+    // 可在此自定义请求处理逻辑
     proxy.web(req, res, {target: 'https://kyfw.12306.cn'});
     // proxy.web(req, res, {target: 'http://127.0.0.1:5151'});
 });
 
-console.log("listening on port 5050")
+console.log("listening on port 5050");
 server.listen(5050);
