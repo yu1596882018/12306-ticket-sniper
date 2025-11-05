@@ -1,3 +1,6 @@
+// 批量日期循环余票查询示例
+// 支持多天自动循环查询，命中后终止
+
 let flag = false, func, index = 0;
 module.exports = func = (queryDate) => {
     (async function () {
@@ -16,8 +19,7 @@ module.exports = func = (queryDate) => {
             // toCiteText: '怀化南',
             seatType: 'O', // M一等座 O二等座
         };
-
-        // 查询
+        // 查询余票
         let queryZResult = await setHeaders(superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryZ'))
             .query({
                 'leftTicketDTO.train_date': queryDate,
@@ -43,7 +45,7 @@ module.exports = func = (queryDate) => {
         flag = true;
     })();
 }
-
+// 多天循环调用
 const timer = setInterval(function () {
     if (index < 7) {
         let queryDate = '2020-01-' + (18 + index);

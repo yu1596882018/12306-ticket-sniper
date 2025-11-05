@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
-    "http-proxy-middleware": "^0.20.0",
+    "dotenv": "^16.0.0",
+    "http-proxy-middleware": "^2.0.9",
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
     "koa-logger": "^3.2.1",
