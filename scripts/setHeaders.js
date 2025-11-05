@@ -1,9 +1,13 @@
+// 设置请求头工具
+// 统一为 superagent 请求设置 12306 所需的所有请求头
+
 const config = require('./config');
 
 /**
  * 设置请求头
- * @param xhr
- * @returns {*}
+ * @param xhr - superagent 请求对象
+ * @param queryCookie - 可选自定义 Cookie
+ * @returns {*} 设置后的请求对象
  */
 module.exports = (xhr, queryCookie) => {
     xhr.set('Accept', '*/*');

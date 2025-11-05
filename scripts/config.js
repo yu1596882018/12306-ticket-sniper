@@ -1,8 +1,15 @@
+// 全局配置文件，集中管理 Redis、用户、抢票参数等
+// 支持多用户、多任务队列，便于扩展和维护
+
 const redis = require('redis');
 const localConfig = require('./localConfig');
-const redisDb = redis.createClient(6379, localConfig.redisHost);
-const redisPub = redis.createClient(6379, localConfig.redisHost);
-const redisSub = redis.createClient(6379, localConfig.redisHost);
+
+// 创建 Redis 客户端（发布、订阅、数据）
+const redisDb = redis.createClient(localConfig.redisPort, localConfig.redisHost);
+const redisPub = redis.createClient(localConfig.redisPort, localConfig.redisHost);
+const redisSub = redis.createClient(localConfig.redisPort, localConfig.redisHost);
+
+// 用户 Cookie，初始值可被 Redis 持久化覆盖
 let userCookie = '_uab_collina=157745159966575018197823; JSESSIONID=7B0D33004DC1C0A0704294C59B1E4DAE; tk=eys8gd8FcgrwPqa4mx2JmM9QLJSbetcFd2mjEzHv1l892y1y0; _jc_save_wfdc_flag=dc; RAIL_EXPIRATION=1581315940103; RAIL_DEVICEID=nWxI6bdTX3uD9q_rVvegqxogtVBfUHYDKwSAtpZuSRdm4avENLF4FmsB3MAe7nM-xgePLg2uVyzlIER1qe3Ohbd5SZGjvZZSsDTYtWR4RPSW3_VqHxQicWK45gZt5jQQmmpmSUW40E8-SxuYgVu58N1jQG9QE4Nv; BIGipServerotn=1944584458.50210.0000; BIGipServerpassport=904397066.50215.0000; route=6f50b51faa11b987e576cdb301e545c4; _jc_save_fromStation=%u90F4%u5DDE%2CCZQ; _jc_save_toStation=%u6DF1%u5733%2CSZQ; _jc_save_toDate=2020-02-08; _jc_save_fromDate=2020-02-10';
 
 redisDb.get('userCookie', function (err, v) {
@@ -10,10 +17,13 @@ redisDb.get('userCookie', function (err, v) {
 });
 
 module.exports = {
+    // Redis 客户端
     redisPub,
     redisSub,
     redisDb,
+    // 查询请求时附带的 Cookie（部分接口需要）
     queryCookie: 'JSESSIONID=3E1C3A2D210B604DB43112717910250E; BIGipServerotn=4023845130.64545.0000; RAIL_EXPIRATION=1579525477039; RAIL_DEVICEID=XTh46ZjPAHC68X3ae9-lB271gkMtsNzpznJBUxiu79as-3EfFzhf9xk_qG5IU1Bso8kZJMAcvJpxGjJiXraa-4glwSJcd9lQEO48f-czcgRkb2D1yRhoyUykslSeF6qUktvZzbKX_69ms9Pg3HMQCPk2FG9faLNZ; BIGipServerpassport=837288202.50215.0000; route=495c805987d0f5c8c84b14f60212447d; _jc_save_fromStation=%u6DF1%u5733%2CSZQ; _jc_save_toStation=%u6F5C%u6C5F%2CQJN; _jc_save_fromDate=2020-01-20; _jc_save_toDate=2020-01-17; _jc_save_wfdc_flag=dc',
+    // 动态设置和获取 userCookie，自动同步到 Redis
     set userCookie (value) {
         redisDb.set('userCookie', value);
         userCookie = value;
@@ -21,7 +31,9 @@ module.exports = {
     get userCookie () {
         return userCookie;
     },
+    // 当前默认用户索引（可切换）
     userIndex: 3,
+    // 乘客信息列表（支持多用户抢票）
     userList: [
         {
             passengerTicketStr: ',0,1,王鑫宇,1,4305***********07X,,N,e271857d7ae6ac3eb9bf28977ba10d922046fe2ff813868c510734672c2af342',
@@ -64,9 +76,11 @@ module.exports = {
             oldPassengerStr: '罗丽思,1,4310***********048,1_'
         }
     ],
+    // 验证码图片缓存
     codeImages: {},
+    // 抢票参数配置（支持多任务/多用户）
     queryOptions: {
-        intervalTime: 500,
+        intervalTime: 500, // 查询间隔（毫秒）
         queryListParams: [
             {
                 userIndex: 0,

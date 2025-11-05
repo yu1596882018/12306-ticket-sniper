@@ -1,3 +1,6 @@
+// Koa2 代理服务示例
+// 用于本地转发 12306 查询请求，便于调试和抓包
+
 const Koa2 = require('koa2');
 const logger = require('koa-logger');
 const bodyparser = require('koa-bodyparser');
@@ -5,12 +8,10 @@ const superagent = require('superagent');
 
 const app = new Koa2();
 
-app.use(logger())
+app.use(logger());
+app.use(bodyparser({ enableTypes: ['json', 'form', 'text'] }));
 
-app.use(bodyparser({
-    enableTypes: ['json', 'form', 'text']
-}))
-
+// 代理转发查询请求
 app.use(async (ctx) => {
     let result = await setHeaders(superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryZ'))
         .query(ctx.request.query);
@@ -21,8 +22,8 @@ app.listen(9999, () => {
     console.log('启动成功', 'http://' + getIPAdress() + ':9999');
 });
 
-
-function getIPAdress () { // 获取本机主机名和ip
+// 获取本机 IP 地址
+function getIPAdress () {
     var interfaces = require('os').networkInterfaces();
     for (var devName in interfaces) {
         var iface = interfaces[devName];
