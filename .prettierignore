@@ -1,0 +1,34 @@
+# 依赖目录
+node_modules/
+package-lock.json
+
+# 构建输出
+dist/
+build/
+
+# 日志
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+
+# 备用代码
+temp2/
+
+# PM2
+.pm2/
+pids/
+logs/
+
+# IDE
+.idea/
+.vscode/
+
+# Git
+.git/
+
+# 其他
+coverage/
+.DS_Store
+

@@ -26,7 +26,7 @@ Thumbs.db
 
 # IDE 配置
 .idea/
-.vscode/
+# .vscode/ - 保留 VSCode 配置以统一开发环境
 *.swp
 *.swo
 *~

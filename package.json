@@ -10,6 +10,8 @@
     "stop": "pm2 stop all",
     "restart": "pm2 restart all",
     "logs": "pm2 logs",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
     "monitor": "pm2 monit"
   },
   "keywords": [
@@ -70,5 +72,7 @@
     "superagent-proxy": "^2.0.0",
     "uuid": "^3.3.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "prettier": "^2.8.8"
+  }
 }
