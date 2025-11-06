@@ -40,3 +40,5 @@ indent_size = 4
 [.env*]
 trim_trailing_whitespace = false
 
+
+
