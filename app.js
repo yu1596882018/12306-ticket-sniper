@@ -2,13 +2,13 @@
  * ========================================
  * 12306 智能抢票系统 - 主服务入口
  * ========================================
- * 
+ *
  * 功能：
  * 1. 启动 Web 服务，提供验证码识别界面
  * 2. 管理 Cookie 和登录状态
  * 3. 启动余票查询和自动抢票任务
  * 4. 通过 Redis 实现多进程通信
- * 
+ *
  * 作者: 烟竹
  * 日期: 2019-12
  * ========================================
@@ -21,7 +21,7 @@ const logger = require('koa-logger');
 const Router = require('koa-router');
 const getCodeImage = require('./scripts/getCodeImage');
 const config = require('./scripts/config');
-const {redisPub, redisSub, redisDb} = config;
+const { redisPub, redisSub, redisDb } = config;
 const authCookie = require('./scripts/authCookie');
 const queryList = require('./scripts/queryList2');
 
@@ -34,9 +34,10 @@ const App = new Koa();
 // ========================================
 // 中间件配置
 // ========================================
-App.use(logger())  // 请求日志
-    .use(serve(path.join(__dirname, './static')), {  // 静态文件服务
-        maxage: 10 * 60 * 1000  // 缓存10分钟
+App.use(logger()) // 请求日志
+    .use(serve(path.join(__dirname, './static')), {
+        // 静态文件服务
+        maxage: 10 * 60 * 1000 // 缓存10分钟
     });
 
 // ========================================
@@ -49,12 +50,12 @@ const router = new Router();
 // ========================================
 
 // 订阅成功回调
-redisSub.on("subscribe", function (channel, count) {
+redisSub.on('subscribe', function (channel, count) {
     console.log(`✓ Redis频道 [${channel}] 订阅成功`);
 });
 
 // 接收消息回调
-redisSub.on("message", function (channel, message) {
+redisSub.on('message', function (channel, message) {
     if (channel == 'app') {
         // Cookie 更新消息
         if (message == 'updateCookie') {
@@ -83,7 +84,7 @@ redisSub.subscribe('app');
  * 获取验证码图片
  * GET /getCode?key={key}
  */
-router.get('/getCode', async (ctx) => {
+router.get('/getCode', async ctx => {
     // 从 Redis 获取验证码图片
     let image = await new Promise((resolve, reject) => {
         redisDb.hget('codeImages', ctx.query.key, (err, res) => {
@@ -101,10 +102,10 @@ router.get('/getCode', async (ctx) => {
  * 提交验证码答案
  * GET /submitCode?answer={answer}
  */
-router.get('/submitCode', async (ctx) => {
+router.get('/submitCode', async ctx => {
     // 验证并获取新 Cookie
     ctx.body = await authCookie(ctx.query.answer);
-    
+
     // 验证成功，广播 Cookie 更新消息
     if (ctx.body.result_code === 0) {
         console.log('✓ 验证码验证成功，广播 Cookie 更新');
@@ -116,7 +117,7 @@ router.get('/submitCode', async (ctx) => {
  * 刷新验证码
  * GET /refreshCode
  */
-router.get('/refreshCode', async (ctx) => {
+router.get('/refreshCode', async ctx => {
     ctx.body = await getCodeImage();
 });
 

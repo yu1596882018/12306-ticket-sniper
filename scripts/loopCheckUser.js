@@ -20,7 +20,7 @@ const superagent = require('superagent');
 const setHeaders = require('./setHeaders');
 const getCodeImage = require('./getCodeImage');
 const config = require('./config');
-const {queryCookie} = require('./config');
+const { queryCookie } = require('./config');
 const moment = require('moment');
 /*
 const start = async () => {
@@ -85,24 +85,30 @@ const start = async () => {
 
         const queryParams = {
             secretStr: '',
-            queryDate: moment().set('date', moment().get('date') + 7).format("YYYY-MM-DD"),
+            queryDate: moment()
+                .set('date', moment().get('date') + 7)
+                .format('YYYY-MM-DD'),
             fromCiteCode: 'SZQ',
             fromCiteText: '深圳',
             toCiteCode: 'LHA',
             toCiteText: '隆回'
-        }
+        };
 
         // 查询
-        let queryZResult = await setHeaders(superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryO'), queryCookie)
-            .query({
-                'leftTicketDTO.train_date': queryParams.queryDate,
-                'leftTicketDTO.from_station': queryParams.fromCiteCode,
-                'leftTicketDTO.to_station': queryParams.toCiteCode,
-                purpose_codes: 'ADULT'
-            });
+        let queryZResult = await setHeaders(
+            superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryO'),
+            queryCookie
+        ).query({
+            'leftTicketDTO.train_date': queryParams.queryDate,
+            'leftTicketDTO.from_station': queryParams.fromCiteCode,
+            'leftTicketDTO.to_station': queryParams.toCiteCode,
+            purpose_codes: 'ADULT'
+        });
         let queryItem = queryZResult.body.data.result.find(item => {
             let arr = item.split('|');
-            return arr[11] === 'Y' && ((arr[30] && arr[30] !== '无') || (arr[31] && arr[31] !== '无'));
+            return (
+                arr[11] === 'Y' && ((arr[30] && arr[30] !== '无') || (arr[31] && arr[31] !== '无'))
+            );
         });
 
         if (!queryItem) {
@@ -110,13 +116,14 @@ const start = async () => {
             return false;
         }
 
-        queryParams.secretStr = queryItem.split('|')[0]
+        queryParams.secretStr = queryItem.split('|')[0];
 
         // 校验登录
-        let checkUserResult = await setHeaders(superagent.post('https://kyfw.12306.cn/otn/login/checkUser'))
-            .send({
-                _json_att: ''
-            });
+        let checkUserResult = await setHeaders(
+            superagent.post('https://kyfw.12306.cn/otn/login/checkUser')
+        ).send({
+            _json_att: ''
+        });
         console.log('checkUserResult', checkUserResult.text);
         let checkUserData = JSON.parse(checkUserResult.text);
         if (!checkUserData.data.flag) {
@@ -125,17 +132,18 @@ const start = async () => {
         }
 
         // 预订
-        let submitOrderRequestResult = await setHeaders(superagent.post('https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest'))
-            .send({
-                secretStr: decodeURIComponent(queryParams.secretStr),
-                train_date: queryParams.queryDate,
-                back_train_date: moment().format("YYYY-MM-DD"),
-                tour_flag: 'dc',
-                purpose_codes: 'ADULT',
-                query_from_station_name: queryParams.fromCiteText,
-                query_to_station_name: queryParams.toCiteText,
-                undefined: ''
-            });
+        let submitOrderRequestResult = await setHeaders(
+            superagent.post('https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest')
+        ).send({
+            secretStr: decodeURIComponent(queryParams.secretStr),
+            train_date: queryParams.queryDate,
+            back_train_date: moment().format('YYYY-MM-DD'),
+            tour_flag: 'dc',
+            purpose_codes: 'ADULT',
+            query_from_station_name: queryParams.fromCiteText,
+            query_to_station_name: queryParams.toCiteText,
+            undefined: ''
+        });
         console.log('submitOrderRequestResult', submitOrderRequestResult.text);
         let checkUserrData = JSON.parse(submitOrderRequestResult.text);
     } catch (e) {
@@ -144,7 +152,7 @@ const start = async () => {
             sendmail: true
         });
     }
-}
+};
 
 setTimeout(start, 3000);
 setInterval(start, 1 * 60 * 1000);

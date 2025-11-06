@@ -1,21 +1,21 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
 const localConfig = require('./localConfig');
 
 module.exports = (key, opt = {}) => {
-// async..await is not allowed in global scope, must use a wrapper
-    async function main () {
+    // async..await is not allowed in global scope, must use a wrapper
+    async function main() {
         // Generate test SMTP service account from ethereal.email
         // Only needed if you don't have a real mail account for testing
         let testAccount = await nodemailer.createTestAccount();
 
         // create reusable transporter object using the default SMTP transport
         let transporter = nodemailer.createTransport({
-            host: "smtp.qq.com",
+            host: 'smtp.qq.com',
             port: 465,
             secure: true, // true for 465, false for other ports
             auth: {
                 user: localConfig.emailUser, // generated ethereal user
-                pass: localConfig.emailPass// generated ethereal password
+                pass: localConfig.emailPass // generated ethereal password
             }
         });
 
@@ -23,11 +23,13 @@ module.exports = (key, opt = {}) => {
         let info = await transporter.sendMail({
             from: `"12306抢票系统" <${localConfig.emailUser}>`, // 发件人
             to: localConfig.emailUser, // 收件人（发给自己）
-            subject: "【12306】验证码识别通知", // 邮件主题
+            subject: '【12306】验证码识别通知', // 邮件主题
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px;">
                     <h2 style="color: #1890ff;">🚄 12306 抢票系统通知</h2>
-                    <p style="font-size: 16px;">${opt.flag ? opt.flag : '登录状态已失效，需要重新验证'}</p>
+                    <p style="font-size: 16px;">${
+                        opt.flag ? opt.flag : '登录状态已失效，需要重新验证'
+                    }</p>
                     <p style="margin: 20px 0;">
                         <a href="${localConfig.host}/autoCode.html?key=${key}" 
                            style="display: inline-block; padding: 12px 24px; background-color: #1890ff; 
@@ -47,13 +49,13 @@ module.exports = (key, opt = {}) => {
             ` // HTML 邮件内容
         });
 
-        console.log("Message sent: %s", info.messageId);
+        console.log('Message sent: %s', info.messageId);
         // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
         // Preview only available when sending through an Ethereal account
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
         // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
     }
 
     main().catch(console.error);
-}
+};

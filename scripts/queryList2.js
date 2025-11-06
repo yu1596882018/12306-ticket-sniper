@@ -22,8 +22,8 @@ const superagent = require('superagent');
 require('superagent-proxy')(superagent);
 const setHeaders = require('./setHeaders');
 const placeOrder = require('./placeOrder');
-const {queryCookie} = require('./config');
-const {openProxy, proxyUrl} = require('./localConfig');
+const { queryCookie } = require('./config');
+const { openProxy, proxyUrl } = require('./localConfig');
 
 /**
  * 查询任务主函数
@@ -31,13 +31,13 @@ const {openProxy, proxyUrl} = require('./localConfig');
  * @param {Number} intervalTime - 查询间隔时间（毫秒）
  * @returns {Object} 返回控制对象，包含 stop 方法
  */
-module.exports = function ({queryListParams: QLP, intervalTime}) {
+module.exports = function ({ queryListParams: QLP, intervalTime }) {
     let isStopFlog = false;
     QLP.forEach(item => {
         if (!item.isEnd) {
             queryFunc();
 
-            function queryFunc () {
+            function queryFunc() {
                 if (new Date().getHours() < 6 || new Date().getHours() >= 23) {
                     return setTimeout(queryFunc, 60 * 60 * 1000);
                 }
@@ -46,134 +46,170 @@ module.exports = function ({queryListParams: QLP, intervalTime}) {
 
                 item.queryDates.forEach(queryDate => {
                     item.citeCodes.forEach(queryOpt => {
-                        pros.push(new Promise(async (resolve, reject) => {
-                            try {
-                                // 查询
-                                let queryZResult = await setHeaders((openProxy ?
-                                    superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryO').proxy(proxyUrl) :
-                                    superagent.get('https://kyfw.12306.cn/otn/leftTicket/queryO')), queryCookie)
-                                    .query({
+                        pros.push(
+                            new Promise(async (resolve, reject) => {
+                                try {
+                                    // 查询
+                                    let queryZResult = await setHeaders(
+                                        openProxy
+                                            ? superagent
+                                                  .get(
+                                                      'https://kyfw.12306.cn/otn/leftTicket/queryO'
+                                                  )
+                                                  .proxy(proxyUrl)
+                                            : superagent.get(
+                                                  'https://kyfw.12306.cn/otn/leftTicket/queryO'
+                                              ),
+                                        queryCookie
+                                    ).query({
                                         'leftTicketDTO.train_date': queryDate,
                                         'leftTicketDTO.from_station': queryOpt.fromCode,
                                         'leftTicketDTO.to_station': queryOpt.toCode,
                                         purpose_codes: 'ADULT'
                                     });
-                                // console.log(queryZResult.body);
-                                // 筛选最优车次
-                                let resultItem = filterItem(queryZResult.body.data.result, queryOpt);
-                                if (resultItem) {
-                                    console.log('有票', `${queryDate}-${queryOpt.fromCiteText}-${queryOpt.toCiteText}`);
-                                    if (!item.isEnd && !flog) {
-                                        let citeMap = queryZResult.body.data.map;
-                                        placeOrder({
-                                            queryDate: queryDate,
-                                            fromCiteCode: queryOpt.fromCode,
-                                            toCiteCode: queryOpt.toCode,
-                                            fromCiteText: citeMap[queryOpt.fromCode] || queryOpt.fromCiteText,
-                                            toCiteText: citeMap[queryOpt.toCode] || queryOpt.toCiteText,
-                                            secretStr: resultItem.data[0],
-                                            userIndex: item.userIndex
-                                        }, item);
-                                        flog = true;
+                                    // console.log(queryZResult.body);
+                                    // 筛选最优车次
+                                    let resultItem = filterItem(
+                                        queryZResult.body.data.result,
+                                        queryOpt
+                                    );
+                                    if (resultItem) {
+                                        console.log(
+                                            '有票',
+                                            `${queryDate}-${queryOpt.fromCiteText}-${queryOpt.toCiteText}`
+                                        );
+                                        if (!item.isEnd && !flog) {
+                                            let citeMap = queryZResult.body.data.map;
+                                            placeOrder(
+                                                {
+                                                    queryDate: queryDate,
+                                                    fromCiteCode: queryOpt.fromCode,
+                                                    toCiteCode: queryOpt.toCode,
+                                                    fromCiteText:
+                                                        citeMap[queryOpt.fromCode] ||
+                                                        queryOpt.fromCiteText,
+                                                    toCiteText:
+                                                        citeMap[queryOpt.toCode] ||
+                                                        queryOpt.toCiteText,
+                                                    secretStr: resultItem.data[0],
+                                                    userIndex: item.userIndex
+                                                },
+                                                item
+                                            );
+                                            flog = true;
+                                        }
+                                        reject(new Error('有'));
+                                    } else {
+                                        console.log(
+                                            '无票',
+                                            `${queryDate}-${queryOpt.fromCiteText}-${queryOpt.toCiteText}`
+                                        );
+                                        resolve('无');
                                     }
-                                    reject(new Error('有'));
-                                } else {
-                                    console.log('无票', `${queryDate}-${queryOpt.fromCiteText}-${queryOpt.toCiteText}`);
-                                    resolve('无');
+                                } catch (e) {
+                                    reject(e);
+                                    throw e;
                                 }
-                            } catch (e) {
-                                reject(e);
-                                throw e;
-                            }
-
-                        }));
+                            })
+                        );
                     });
                 });
 
-                Promise.all(pros).then(res => {
-                    if (!isStopFlog) {
-                        setTimeout(queryFunc, intervalTime || 5000);
+                Promise.all(pros).then(
+                    res => {
+                        if (!isStopFlog) {
+                            setTimeout(queryFunc, intervalTime || 5000);
+                        }
+                    },
+                    err => {
+                        if (err.message !== '有') {
+                            setTimeout(queryFunc, 0.2 * 60 * 1000);
+                        }
+                        throw err;
                     }
-                }, err => {
-                    if (err.message !== '有') {
-                        setTimeout(queryFunc, 0.2 * 60 * 1000);
-                    }
-                    throw err;
-                });
+                );
             }
         }
     });
 
     return {
-        stop () {
+        stop() {
             isStopFlog = true;
         }
-    }
-}
+    };
+};
 
 // 筛选最优车次
-function filterItem (data, queryOpt = {}) {
-    let items = data
+function filterItem(data, queryOpt = {}) {
+    let items = data;
     if (queryOpt.scheduleTime) {
         items = items.filter(item => {
-            let arr = item.split('|')
-            let currentTime = +arr[8].replace(':', '')
+            let arr = item.split('|');
+            let currentTime = +arr[8].replace(':', '');
             if (queryOpt.scheduleTime.startTime) {
                 if (currentTime < +queryOpt.scheduleTime.startTime.replace(':', '')) {
-                    return false
+                    return false;
                 }
             }
 
             if (queryOpt.scheduleTime.endTime) {
                 if (currentTime > +queryOpt.scheduleTime.endTime.replace(':', '')) {
-                    return false
+                    return false;
                 }
             }
 
             if (queryOpt.scheduleToSiteCode && arr[7] !== queryOpt.scheduleToSiteCode) {
-                return false
+                return false;
             }
 
-            return true
-        })
+            return true;
+        });
     }
 
-    items = items.filter(item => {
-        let arr = item.split('|');
-        if (queryOpt.refuseCheci && queryOpt.refuseCheci.includes(arr[3])) {
-            return false
-        }
+    items = items
+        .filter(item => {
+            let arr = item.split('|');
+            if (queryOpt.refuseCheci && queryOpt.refuseCheci.includes(arr[3])) {
+                return false;
+            }
 
-        return (queryOpt.checi ? queryOpt.checi.includes(arr[3]) : true) && arr[11] === 'Y' && ((arr[30] && arr[30] !== '无') || (arr[31] && arr[31] !== '无'))
-    }).map(item => {
-        let arr = item.split('|')
-        let O, M;
-        if (!arr[30] || arr[30] === '无') {
-            O = 0;
-        } else {
-            O = arr[30];
-        }
+            return (
+                (queryOpt.checi ? queryOpt.checi.includes(arr[3]) : true) &&
+                arr[11] === 'Y' &&
+                ((arr[30] && arr[30] !== '无') || (arr[31] && arr[31] !== '无'))
+            );
+        })
+        .map(item => {
+            let arr = item.split('|');
+            let O, M;
+            if (!arr[30] || arr[30] === '无') {
+                O = 0;
+            } else {
+                O = arr[30];
+            }
 
-        if (!arr[31] || arr[31] === '无') {
-            M = 0;
-        } else {
-            M = arr[31];
-        }
+            if (!arr[31] || arr[31] === '无') {
+                M = 0;
+            } else {
+                M = arr[31];
+            }
 
-        return {
-            data: arr,
-            O,
-            M
-        }
-    });
+            return {
+                data: arr,
+                O,
+                M
+            };
+        });
 
     // 按所选车次排序
     if (queryOpt.checi) {
-        items = queryOpt.checi.map(item => {
-            return items.find(item2 => {
-                return item === item2.data[3];
-            });
-        }).filter(item => item);
+        items = queryOpt.checi
+            .map(item => {
+                return items.find(item2 => {
+                    return item === item2.data[3];
+                });
+            })
+            .filter(item => item);
     }
 
     let item = items.find(item => {

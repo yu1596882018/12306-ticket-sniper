@@ -16,7 +16,10 @@ module.exports = (xhr, queryCookie) => {
     xhr.set('Referer', 'https://kyfw.12306.cn/otn/confirmPassenger/initDc');
     xhr.set('Sec-Fetch-Mode', 'cors');
     xhr.set('Sec-Fetch-Site', 'same-origin');
-    xhr.set('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.18363');
+    xhr.set(
+        'User-Agent',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.18363'
+    );
     xhr.set('X-Requested-With', 'XMLHttpRequest');
     return xhr;
-}
+};
