@@ -177,8 +177,8 @@ Cookie → Redis 缓存 → 定时检测 → 失效通知 → 验证码识别 �
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/yu1596882018/12306Script.git
-cd 12306Script
+git clone https://github.com/yu1596882018/12306-ticket-sniper.git
+cd 12306-ticket-sniper
 
 # 2. 安装依赖
 npm install
@@ -282,8 +282,8 @@ yum install -y nodejs redis git
 npm install -g pm2
 
 cd /opt
-git clone https://github.com/yu1596882018/12306Script.git
-cd 12306Script
+git clone https://github.com/yu1596882018/12306-ticket-sniper.git
+cd 12306-ticket-sniper
 npm install
 cp .env.example .env
 vim .env  # 配置
@@ -441,7 +441,7 @@ module.exports = {
 ## 📁 项目结构
 
 ```
-12306Script/
+12306-ticket-sniper/
 ├── app.js                  # 主服务入口
 ├── package.json            # 项目配置
 ├── .env.example            # 环境变量示例
@@ -527,7 +527,7 @@ module.exports = {
 ## 📞 联系方式
 
 - **作者**：烟竹
-- **GitHub**：[yu1596882018/12306Script](https://github.com/yu1596882018/12306Script)
+- **GitHub**：[yu1596882018/12306-ticket-sniper](https://github.com/yu1596882018/12306-ticket-sniper)
 - **Email**：1596882018@qq.com
 
 ---
