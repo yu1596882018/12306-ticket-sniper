@@ -547,7 +547,7 @@ module.exports = {
 
 ## 📞 联系方式
 
--   **作者**：烟竹
+-   **作者**：yu1596882018
 -   **GitHub**：[yu1596882018/12306-ticket-sniper](https://github.com/yu1596882018/12306-ticket-sniper)
 -   **Email**：1596882018@qq.com
 
@@ -560,7 +560,7 @@ module.exports = {
 ---
 
 <p align="center">
-  Made with ❤️ by 烟竹
+  Made with ❤️ by yu1596882018
 </p>
 
 <p align="center">
